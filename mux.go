@@ -17,6 +17,7 @@ type User struct {
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("users", listUserHandler)
+	mux.HandleFunc("POST /users", createUserHandler)
 	http.ListenAndServe(":3000", mux)
 }
 
@@ -57,4 +58,18 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Close()
+
+	var u User
+	if err := json.NewDecoder(r.Body).Decore(&u); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if _, err := db.Exec(
+		"INSERT INTO users (id, name, email) VALUES (?, ?, ?)",
+		u.ID, u.Name, u.Email,
+	); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
 }
