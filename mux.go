@@ -27,7 +27,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("users", listUserHandler)
 	mux.HandleFunc("POST /users", createUserHandler)
-	mux.HandleFunc("/cpu", CPUIntensiveEndpoint)
+	// mux.HandleFunc("/cpu", CPUIntensiveEndpoint)
 	go http.ListenAndServe(":3000", mux)
 	http.ListenAndServe(":6060", nil)
 }
