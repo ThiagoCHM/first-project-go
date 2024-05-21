@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	_ "net/http/pprof"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -14,11 +16,20 @@ type User struct {
 	Email string `json:"_"`
 }
 
+func fibonacci(n int) int {
+	if n <= 1 {
+		return n
+	}
+	return fibonacci(n-1) + fibonacci(n-2)
+}
+
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("users", listUserHandler)
 	mux.HandleFunc("POST /users", createUserHandler)
-	http.ListenAndServe(":3000", mux)
+	mux.HandleFunc("/cpu", CPUIntensiveEndpoint)
+	go http.ListenAndServe(":3000", mux)
+	http.ListenAndServe(":6060", nil)
 }
 
 func listUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -73,3 +84,18 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusCreated)
 }
+
+// func CPUIntensiveEndpoint(w http.ResponseWriter, r *http.Request) {
+// 	result := fibonacci(60)
+// 	w.Write([]byte(strconv.Itoa(result)))
+// }
+
+// func generateLargeString(n int) string{
+// 	var buffer bytes.Buffer
+// 	for i := 0; i<n; i++{
+// 		for j :=0; j<n;j++{
+// 			buffer.WriteString(strconv.Itoa(i + j*j))
+// 		}
+// 	}
+// 	return buffer.String()
+// }
